@@ -27,7 +27,7 @@ RUN sudo apt -yq upgrade
 RUN sudo apt install -yq ros-iron-desktop
 
 # Setup environment
-RUN source /opt/ros/iron/setup.bash
+RUN ["/bin/bash", "-c", "source /opt/ros/iron/setup.bash"].
 
 RUN apt-get update && apt-get install -yq \
     git \
