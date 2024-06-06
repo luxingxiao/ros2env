@@ -23,10 +23,11 @@ RUN sudo apt update && sudo apt install -yq ros-dev-tools
 
 # Install ROS 2
 RUN sudo apt update
-RUN sudo apt install ros-jazzy-desktop -yq
+RUN sudo apt upgrade
+RUN sudo apt install -yq ros-iron-desktop
 
 # Setup environment
-RUN source /opt/ros/jazzy/setup.bash
+RUN source /opt/ros/iron/setup.bash
 
 RUN apt-get update && apt-get install -yq \
     git \
