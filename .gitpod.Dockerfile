@@ -19,11 +19,11 @@ RUN sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.ke
 RUN echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
 
 #Install development tools
-RUN sudo apt update && sudo apt install ros-dev-tools
+RUN sudo apt update && sudo apt install -yq ros-dev-tools 
 
 # Install ROS 2
 RUN sudo apt update
-RUN sudo apt install ros-jazzy-desktop
+RUN sudo apt install ros-jazzy-desktop -yq
 
 # Setup environment
 RUN source /opt/ros/jazzy/setup.bash
