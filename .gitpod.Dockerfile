@@ -23,7 +23,7 @@ RUN sudo apt update && sudo apt install -yq ros-dev-tools
 
 # Install ROS 2
 RUN sudo apt update
-RUN sudo apt upgrade
+RUN sudo apt -yq upgrade
 RUN sudo apt install -yq ros-iron-desktop
 
 # Setup environment
