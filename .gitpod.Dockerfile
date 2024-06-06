@@ -30,9 +30,9 @@ RUN sudo apt install -yq ros-iron-desktop
 RUN echo "source /opt/ros/iron/setup.bash" >> ~/.bashrc
 
 # Install turtlesim
-RUN sudo apt install ros-iron-turtlesim
+RUN sudo apt install -yq ros-iron-turtlesim
 
 # Install rqt
-RUN sudo apt install ~nros-iron-rqt*
+RUN sudo apt install -yq ~nros-iron-rqt*
 
 USER gitpod
