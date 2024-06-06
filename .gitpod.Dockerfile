@@ -27,6 +27,6 @@ RUN sudo apt -yq upgrade
 RUN sudo apt install -yq ros-iron-desktop
 
 # Setup environment
-RUN ["/bin/bash", "-c", "source /opt/ros/iron/setup.bash"].
+RUN echo "source /opt/ros/iron/setup.bash" >> ~/.bashrc
 
 USER gitpod
