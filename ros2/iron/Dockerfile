@@ -1,4 +1,4 @@
-FROM gitpod/workspace-full-vnc
+FROM luxingxiao/ubuntu22.04-vnc:latest
 
 # Set the locale
 RUN locale  # check for UTF-8
