@@ -9,9 +9,10 @@ USER root
 
 COPY install-packages upgrade-packages /usr/bin/
 
+RUN apt-get update
+
 ### base ###
-RUN yes | unminimize \
-    && install-packages \
+RUN apt-get install -y \
         zip \
         unzip \
         bash-completion \
@@ -41,13 +42,13 @@ RUN yes | unminimize \
 ENV LANG=en_US.UTF-8
 
 ### Update and upgrade the base image ###
-RUN upgrade-packages
+RUN apt-get upgrade -y
 
 ### Git ###
 RUN add-apt-repository -y ppa:git-core/ppa
 # https://github.com/git-lfs/git-lfs/blob/main/INSTALLING.md
 RUN curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash
-RUN install-packages git git-lfs
+RUN apt-get install -y git git-lfs
 
 ### Gitpod user ###
 # '-l': see https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#user
