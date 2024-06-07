@@ -1,6 +1,6 @@
-FROM ubuntu:20.04
-LABEL org.opencontainers.image.title="Ubuntu 20.04 blank image with VNC support"
-LABEL org.opencontainers.image.description="ROS 2 development environment with Ubuntu22.04 & VNC support"
+FROM ubuntu:22.04
+LABEL org.opencontainers.image.title="Ubuntu 22.04 blank image with VNC support"
+LABEL org.opencontainers.image.description="Development environment with Ubuntu22.04 & VNC support"
 LABEL org.opencontainers.image.source="https://github.com/luxingxiao/ros2env"
 LABEL org.opencontainers.image.authors="Lu Xingxiao <luxingxiao@gmail.com>"
 
@@ -50,31 +50,30 @@ RUN useradd -l -u 33333 -G sudo -md /home/gitpod -s /bin/bash -p gitpod gitpod &
 # Switch to gitpod user
 USER gitpod
 
-# Install informative git for bash
-RUN git clone https://github.com/magicmonty/bash-git-prompt.git ~/.bash-git-prompt --depth=1
-
-# Set up .bashrc
-WORKDIR /home/gitpod
-RUN echo "GIT_PROMPT_ONLY_IN_REPO=1" >> ~/.bashrc && \
-    echo "source \${HOME}/.bash-git-prompt/gitprompt.sh" >> ~/.bashrc
-
-# Create the Desktop dir
-RUN mkdir -p /home/gitpod/Desktop
-
 # Switch back to root
 USER root
 
-# Set up script to launch graphics and vnc
-COPY start-vnc-session.sh /usr/bin/start-vnc-session.sh
-RUN chmod +x /usr/bin/start-vnc-session.sh && \
-    dos2unix /usr/bin/start-vnc-session.sh
+# Install Desktop-ENV, tools
+RUN install-packages \
+	tigervnc-standalone-server tigervnc-xorg-extension \
+	dbus dbus-x11 gnome-keyring xfce4 xfce4-terminal \
+	xdg-utils x11-xserver-utils pip
 
-# Manage ports
-EXPOSE 5901 6080 10000/tcp 10000/udp
+# Install novnc and numpy module for it
+RUN git clone --depth 1 https://github.com/novnc/noVNC.git /opt/novnc \
+	&& git clone --depth 1 https://github.com/novnc/websockify /opt/novnc/utils/websockify \
+	&& find /opt/novnc -type d -name '.git' -exec rm -rf '{}' + \
+	&& sudo -H pip3 install numpy
+COPY ../novnc-index.html /opt/novnc/index.html
+COPY ../gp-vncsession /usr/bin/
 
-# Clean up unnecessary installation products
-RUN rm -Rf /var/lib/apt/lists/*
+# Add VNC startup script
+COPY <<-"EOF" /home/gitpod/.bashrc.d/500-vnc
+export DISPLAY=:0
+test -e "$GITPOD_REPO_ROOT" && gp-vncsession
+EOF
 
-# Launch bash from /workspace
-WORKDIR /workspace
-CMD ["bash"]
+RUN chmod 0755 "$(which gp-vncsession)"
+
+# Add X11 dotfiles
+COPY --chown=gitpod:gitpod ../.xinitrc $HOME/
