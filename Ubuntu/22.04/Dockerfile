@@ -29,15 +29,10 @@ RUN dos2unix /etc/X11/xorg.conf
 RUN apt install -y python3 python3-dev python3-pip python3-setuptools
     
 # Install other dependencies
-RUN apt-get install -y bash-completion build-essential cmake cmake-curses-gui coinor-libipopt-dev curl freeglut3-dev git libace-dev libboost-filesystem-dev libboost-system-dev libboost-thread-dev libdc1394-22-dev libedit-dev libeigen3-dev libgsl0-dev libjpeg-dev liblua5.1-dev libode-dev libopencv-dev libsdl1.2-dev libtinyxml-dev libv4l-dev libxml2-dev lua5.1 portaudio19-dev qml-module-qt-labs-folderlistmodel qml-module-qt-labs-settings qml-module-qtmultimedia qml-module-qtquick-controls qml-module-qtquick-dialogs qml-module-qtquick-window2 qml-module-qtquick2 qtbase5-dev qtdeclarative5-dev qtmultimedia5-dev swig libmatio-dev libirrlicht-dev libspdlog-dev libblas-dev liblapack-dev wget sudo nlohmann-json3-dev zsh xonsh ninja-build 
+RUN apt-get install -y bash-completion build-essential cmake cmake-curses-gui coinor-libipopt-dev curl freeglut3-dev git libace-dev libboost-filesystem-dev libboost-system-dev libboost-thread-dev libdc1394-dev libedit-dev libeigen3-dev libgsl0-dev libjpeg-dev liblua5.1-dev libode-dev libopencv-dev libsdl1.2-dev libtinyxml-dev libv4l-dev libxml2-dev lua5.1 portaudio19-dev qml-module-qt-labs-folderlistmodel qml-module-qt-labs-settings qml-module-qtmultimedia qml-module-qtquick-controls qml-module-qtquick-dialogs qml-module-qtquick-window2 qml-module-qtquick2 qtbase5-dev qtdeclarative5-dev qtmultimedia5-dev swig libmatio-dev libirrlicht-dev libspdlog-dev libblas-dev liblapack-dev wget sudo nlohmann-json3-dev zsh xonsh ninja-build 
     
 # Install magic-wormwhole to get things from one computer to another safely
 RUN apt install -y magic-wormhole
-
-# Install noVNC
-RUN git clone https://github.com/novnc/noVNC.git /opt/novnc && \
-    git clone https://github.com/novnc/websockify /opt/novnc/utils/websockify && \
-    echo "<html><head><meta http-equiv=\"Refresh\" content=\"0; url=vnc.html?autoconnect=true&reconnect=true&reconnect_delay=1000&resize=scale&quality=9\"></head></html>" > /opt/novnc/index.html
 
 # Set environmental variables
 ENV DISPLAY=:1
@@ -54,7 +49,7 @@ USER gitpod
 USER root
 
 # Install Desktop-ENV, tools
-RUN install-packages \
+RUN apt-get install -y \
 	tigervnc-standalone-server tigervnc-xorg-extension \
 	dbus dbus-x11 gnome-keyring xfce4 xfce4-terminal \
 	xdg-utils x11-xserver-utils pip
@@ -73,7 +68,7 @@ export DISPLAY=:0
 test -e "$GITPOD_REPO_ROOT" && gp-vncsession
 EOF
 
-RUN chmod 0755 "$(which gp-vncsession)"
+RUN chmod 0755 /usr/bin/gp-vncsession
 
 ENV HOME=/home/gitpod
 WORKDIR $HOME
