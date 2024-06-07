@@ -1,4 +1,4 @@
-FROM luxingxiao/ubuntu22.04-vnc:latest
+FROM luxingxiao/ubuntu22.04-novnc:latest
 
 # Set the locale
 RUN locale  # check for UTF-8
