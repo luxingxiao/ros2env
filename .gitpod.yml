@@ -1,2 +1,1 @@
-image:
-    file: .gitpod.Dockerfile
+image: luxingxiao/ubuntu22.04-novnc
