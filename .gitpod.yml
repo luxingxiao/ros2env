@@ -1,1 +1,1 @@
-image: registry.hub.docker.com/luxingxiao/ubuntu22.04-novnc
+image: luxingxiao/ros2env-iron
