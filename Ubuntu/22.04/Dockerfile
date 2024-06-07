@@ -64,8 +64,8 @@ RUN git clone --depth 1 https://github.com/novnc/noVNC.git /opt/novnc \
 	&& git clone --depth 1 https://github.com/novnc/websockify /opt/novnc/utils/websockify \
 	&& find /opt/novnc -type d -name '.git' -exec rm -rf '{}' + \
 	&& sudo -H pip3 install numpy
-COPY ../novnc-index.html /opt/novnc/index.html
-COPY ../gp-vncsession /usr/bin/
+COPY novnc-index.html /opt/novnc/index.html
+COPY gp-vncsession /usr/bin/
 
 # Add VNC startup script
 COPY <<-"EOF" /home/gitpod/.bashrc.d/500-vnc
@@ -75,5 +75,7 @@ EOF
 
 RUN chmod 0755 "$(which gp-vncsession)"
 
+ENV HOME=/home/gitpod
+WORKDIR $HOME
 # Add X11 dotfiles
-COPY --chown=gitpod:gitpod ../.xinitrc $HOME/
+COPY --chown=gitpod:gitpod .xinitrc $HOME/.xinitrc
