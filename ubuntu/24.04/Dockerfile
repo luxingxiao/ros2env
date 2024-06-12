@@ -1,6 +1,6 @@
-FROM ubuntu:22.04
-LABEL org.opencontainers.image.title="Ubuntu 22.04 blank image with VNC support"
-LABEL org.opencontainers.image.description="Development environment with Ubuntu22.04 & VNC support"
+FROM buildpack-deps:noble
+LABEL org.opencontainers.image.title="Ubuntu 20.04 blank image with VNC support"
+LABEL org.opencontainers.image.description="ROS 2 development environment with Ubuntu22.04 & VNC support"
 LABEL org.opencontainers.image.source="https://github.com/luxingxiao/ros2env"
 LABEL org.opencontainers.image.authors="Lu Xingxiao <luxingxiao@gmail.com>"
 
@@ -27,27 +27,6 @@ RUN dos2unix /etc/X11/xorg.conf
 
 # Install python
 RUN apt install -y python3 python3-dev python3-pip python3-setuptools
-
-# Install c lang env
-
-RUN curl -fsSL https://apt.llvm.org/llvm-snapshot.gpg.key | sudo gpg --dearmor -o /usr/share/keyrings/llvm-archive-keyring.gpg \
-    && echo "deb [signed-by=/usr/share/keyrings/llvm-archive-keyring.gpg] https://apt.llvm.org/focal/ \
-    llvm-toolchain-focal-17 main" | sudo tee /etc/apt/sources.list.d/llvm.list > /dev/null \
-    && apt update \
-    && install-packages \
-        clang-17 \
-        clangd-17 \
-        clang-format-17 \
-        clang-tidy-17 \
-        gdb \
-        lld-17
-
-RUN sudo update-alternatives --install /usr/bin/clang clang /usr/lib/llvm-17/bin/clang 100 \
-    && sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/lib/llvm-17/bin/clang++ 100 \
-    && sudo update-alternatives --install /usr/bin/clangd clangd /usr/bin/clangd-17 100 \
-    && sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-17 100 \
-    && sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-17 100 \
-    && sudo update-alternatives --install /usr/bin/lld lld /usr/bin/lld-17 100
     
 # Install other dependencies
 RUN apt-get install -y bash-completion build-essential cmake cmake-curses-gui coinor-libipopt-dev curl freeglut3-dev git libace-dev libboost-filesystem-dev libboost-system-dev libboost-thread-dev libdc1394-22-dev libedit-dev libeigen3-dev libgsl0-dev libjpeg-dev liblua5.1-dev libode-dev libopencv-dev libsdl1.2-dev libtinyxml-dev libv4l-dev libxml2-dev lua5.1 portaudio19-dev qml-module-qt-labs-folderlistmodel qml-module-qt-labs-settings qml-module-qtmultimedia qml-module-qtquick-controls qml-module-qtquick-dialogs qml-module-qtquick-window2 qml-module-qtquick2 qtbase5-dev qtdeclarative5-dev qtmultimedia5-dev swig libmatio-dev libirrlicht-dev libspdlog-dev libblas-dev liblapack-dev wget sudo nlohmann-json3-dev zsh xonsh ninja-build 
