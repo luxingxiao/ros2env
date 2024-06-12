@@ -1,6 +1,12 @@
 FROM dorowu/ubuntu-desktop-lxde-vnc:bionic
 LABEL maintainer="Tiryoh<tiryoh@gmail.com>"
 
+RUN apt-get update && apt-get install -yq \
+    git \
+    git-lfs \
+    sudo \
+    && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/*
+
 # RUN apt-get update -q && \
 #     apt-get upgrade -yq && \
 #     apt-get install -yq wget curl git build-essential vim sudo lsb-release locales bash-completion tzdata gosu && \
