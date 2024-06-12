@@ -14,7 +14,3 @@ RUN mkdir -p /tmp/ros_setup_scripts_ubuntu && mv /ros-eloquent-desktop.sh /tmp/r
     rm -rf /var/lib/apt/lists/*
 ENV USER ubuntu
 
-# Create the gitpod user. UID must be 33333.
-RUN useradd -l -u 33333 -G sudo -md /home/gitpod -s /bin/bash -p gitpod gitpod
-USER gitpod
-
