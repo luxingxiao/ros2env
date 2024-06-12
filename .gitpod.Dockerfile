@@ -8,8 +8,8 @@ RUN apt-get update -q && \
 RUN useradd -l -u 33333 -G sudo -md /home/gitpod -s /bin/bash -p gitpod gitpod
 USER gitpod
 
-COPY ./ros-eloquent-desktop.sh /ros-eloquent-desktop.sh
-RUN mkdir -p /tmp/ros_setup_scripts_ubuntu && mv /ros-eloquent-desktop.sh /tmp/ros_setup_scripts_ubuntu/ && \
+COPY ./ros-eloquent-desktop.sh /home/gitpod/ros-eloquent-desktop.sh
+RUN mkdir -p /tmp/ros_setup_scripts_ubuntu && mv /home/gitpod//ros-eloquent-desktop.sh /tmp/ros_setup_scripts_ubuntu/ && \
     /tmp/ros_setup_scripts_ubuntu/ros-eloquent-desktop.sh && \
     rm -rf /var/lib/apt/lists/*
 
