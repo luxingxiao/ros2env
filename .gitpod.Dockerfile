@@ -9,8 +9,8 @@ RUN useradd --create-home --home-dir /home/ubuntu --shell /bin/bash --user-group
     echo ubuntu:ubuntu | chpasswd && \
     echo "ubuntu ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 COPY ./ros-eloquent-desktop.sh /ros-eloquent-desktop.sh
-RUN mv /ros-eloquent-desktop.sh /home/ubuntu/ && \
-    gosu ubuntu /home/ubuntu/ros-eloquent-desktop.sh && \
-    rm -rf /var/lib/apt/lists/*
+RUN chmod +x /ros-eloquent-desktop.sh
+RUN /ros-eloquent-desktop.sh
+RUN rm -rf /var/lib/apt/lists/*
 ENV USER ubuntu
 
