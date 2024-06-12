@@ -1,1 +1,1 @@
-image: luxingxiao/ros2-gitpod-vnc:eloquent
+image: dorowu/ubuntu-desktop-lxde-vnc:bionic
