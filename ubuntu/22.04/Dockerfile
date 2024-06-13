@@ -5,14 +5,14 @@ LABEL org.opencontainers.image.description="Development environment with Ubuntu2
 LABEL org.opencontainers.image.source="https://github.com/luxingxiao/ros2env"
 LABEL org.opencontainers.image.authors="Lu Xingxiao <luxingxiao@gmail.com>"
 
-USER root
-
 COPY install-packages upgrade-packages /usr/bin/
 
-RUN apt-get update
+RUN chmod +x /usr/bin/install-packages
+RUN chmod +x /usr/bin/upgrade-packages
 
 ### base ###
-RUN apt-get install -y \
+RUN yes | unminimize \
+    && install-packages \
         zip \
         unzip \
         bash-completion \
@@ -42,13 +42,13 @@ RUN apt-get install -y \
 ENV LANG=en_US.UTF-8
 
 ### Update and upgrade the base image ###
-RUN apt-get upgrade -y
+RUN upgrade-packages
 
 ### Git ###
 RUN add-apt-repository -y ppa:git-core/ppa
 # https://github.com/git-lfs/git-lfs/blob/main/INSTALLING.md
 RUN curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash
-RUN apt-get install -y git git-lfs
+RUN install-packages git git-lfs
 
 ### Gitpod user ###
 # '-l': see https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#user
@@ -62,6 +62,9 @@ ENV HOME=/home/gitpod
 WORKDIR $HOME
 # custom Bash prompt
 RUN { echo && echo "PS1='\[\033[01;32m\]\u\[\033[00m\] \[\033[01;34m\]\w\[\033[00m\]\$(__git_ps1 \" (%s)\") $ '" ; } >> .bashrc
+
+COPY default.gitconfig /etc/gitconfig
+COPY --chown=gitpod:gitpod default.gitconfig /home/gitpod/.gitconfig
 
 # configure git-lfs
 RUN git lfs install --system --skip-repo
@@ -81,17 +84,8 @@ ENV PATH=$HOME/.local/bin:/usr/games:$PATH
 
 USER root
 
-# Install python
-RUN apt install -y python3 python3-dev python3-pip python3-setuptools
-    
-# Install other dependencies
-RUN apt-get install -y bash-completion build-essential cmake cmake-curses-gui coinor-libipopt-dev curl freeglut3-dev git libace-dev libboost-filesystem-dev libboost-system-dev libboost-thread-dev libdc1394-dev libedit-dev libeigen3-dev libgsl0-dev libjpeg-dev liblua5.1-dev libode-dev libopencv-dev libsdl1.2-dev libtinyxml-dev libv4l-dev libxml2-dev lua5.1 portaudio19-dev qml-module-qt-labs-folderlistmodel qml-module-qt-labs-settings qml-module-qtmultimedia qml-module-qtquick-controls qml-module-qtquick-dialogs qml-module-qtquick-window2 qml-module-qtquick2 qtbase5-dev qtdeclarative5-dev qtmultimedia5-dev swig libmatio-dev libirrlicht-dev libspdlog-dev libblas-dev liblapack-dev wget sudo nlohmann-json3-dev zsh xonsh ninja-build 
-    
-# Install magic-wormwhole to get things from one computer to another safely
-RUN apt install -y magic-wormhole
-
 # Install Desktop-ENV, tools
-RUN apt-get install -y \
+RUN install-packages \
 	tigervnc-standalone-server tigervnc-xorg-extension \
 	dbus dbus-x11 gnome-keyring xfce4 xfce4-terminal \
 	xdg-utils x11-xserver-utils pip
@@ -107,14 +101,12 @@ COPY gp-vncsession /usr/bin/
 # Add VNC startup script
 COPY <<-"EOF" /home/gitpod/.bashrc.d/500-vnc
 export DISPLAY=:0
-test -e gp-vncsession
+test -e "$GITPOD_REPO_ROOT" && gp-vncsession
 EOF
 
 RUN chmod 0755 /usr/bin/gp-vncsession
 
-ENV HOME=/home/gitpod
-WORKDIR $HOME
 # Add X11 dotfiles
-COPY --chown=gitpod:gitpod .xinitrc $HOME/.xinitrc
+COPY --chown=gitpod:gitpod .xinitrc $HOME/
 
 USER gitpod

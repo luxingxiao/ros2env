@@ -1,7 +1,7 @@
 FROM buildpack-deps:focal
 
-LABEL org.opencontainers.image.title="Ubuntu 22.04 blank image with VNC support"
-LABEL org.opencontainers.image.description="Development environment with Ubuntu22.04 & VNC support"
+LABEL org.opencontainers.image.title="Ubuntu 20.04 blank image with VNC support"
+LABEL org.opencontainers.image.description="Development environment with Ubuntu20.04 & VNC support"
 LABEL org.opencontainers.image.source="https://github.com/luxingxiao/ros2env"
 LABEL org.opencontainers.image.authors="Lu Xingxiao <luxingxiao@gmail.com>"
 
