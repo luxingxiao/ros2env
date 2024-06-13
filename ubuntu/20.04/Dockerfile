@@ -1,101 +1,112 @@
 FROM buildpack-deps:focal
+
 LABEL org.opencontainers.image.title="Ubuntu 22.04 blank image with VNC support"
 LABEL org.opencontainers.image.description="Development environment with Ubuntu22.04 & VNC support"
 LABEL org.opencontainers.image.source="https://github.com/luxingxiao/ros2env"
 LABEL org.opencontainers.image.authors="Lu Xingxiao <luxingxiao@gmail.com>"
 
-# Non-interactive installation mode
-ENV DEBIAN_FRONTEND=noninteractive
+COPY install-packages upgrade-packages /usr/bin/
 
-# Update apt database
-RUN apt update
+RUN chmod +x /usr/bin/install-packages
+RUN chmod +x /usr/bin/upgrade-packages
 
-# Install essentials
-RUN apt install -y apt-utils software-properties-common apt-transport-https sudo \
-    psmisc tmux nano wget curl telnet gnupg gdb git gitk autoconf locales gdebi \
-    terminator meld dos2unix meshlab
-
-# Set the locale
-RUN locale-gen en_US.UTF-8
-
-# Install graphics
-RUN apt install -y xfce4 xfce4-goodies xserver-xorg-video-dummy xserver-xorg-legacy x11vnc firefox && \
-    apt remove -y xfce4-power-manager light-locker && \
-    sed -i 's/allowed_users=console/allowed_users=anybody/' /etc/X11/Xwrapper.config
-COPY xorg.conf /etc/X11/xorg.conf
-RUN dos2unix /etc/X11/xorg.conf
-
-# Install python
-RUN apt install -y python3 python3-dev python3-pip python3-setuptools
-
-# Install c lang env
-
-RUN curl -fsSL https://apt.llvm.org/llvm-snapshot.gpg.key | sudo gpg --dearmor -o /usr/share/keyrings/llvm-archive-keyring.gpg \
-    && echo "deb [signed-by=/usr/share/keyrings/llvm-archive-keyring.gpg] https://apt.llvm.org/focal/ \
-    llvm-toolchain-focal-17 main" | sudo tee /etc/apt/sources.list.d/llvm.list > /dev/null \
-    && apt update \
+### base ###
+RUN yes | unminimize \
     && install-packages \
-        clang-17 \
-        clangd-17 \
-        clang-format-17 \
-        clang-tidy-17 \
-        gdb \
-        lld-17
+        zip \
+        unzip \
+        bash-completion \
+        build-essential \
+        ninja-build \
+        htop \
+        iputils-ping \
+        jq \
+        less \
+        locales \
+        man-db \
+        nano \
+        ripgrep \
+        software-properties-common \
+        sudo \
+        stow \
+        time \
+        emacs-nox \
+        vim \
+        multitail \
+        lsof \
+        ssl-cert \
+        fish \
+        zsh \
+    && locale-gen en_US.UTF-8
 
-RUN sudo update-alternatives --install /usr/bin/clang clang /usr/lib/llvm-17/bin/clang 100 \
-    && sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/lib/llvm-17/bin/clang++ 100 \
-    && sudo update-alternatives --install /usr/bin/clangd clangd /usr/bin/clangd-17 100 \
-    && sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-17 100 \
-    && sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-17 100 \
-    && sudo update-alternatives --install /usr/bin/lld lld /usr/bin/lld-17 100
-    
-# Install other dependencies
-RUN apt-get install -y bash-completion build-essential cmake cmake-curses-gui coinor-libipopt-dev curl freeglut3-dev git libace-dev libboost-filesystem-dev libboost-system-dev libboost-thread-dev libdc1394-22-dev libedit-dev libeigen3-dev libgsl0-dev libjpeg-dev liblua5.1-dev libode-dev libopencv-dev libsdl1.2-dev libtinyxml-dev libv4l-dev libxml2-dev lua5.1 portaudio19-dev qml-module-qt-labs-folderlistmodel qml-module-qt-labs-settings qml-module-qtmultimedia qml-module-qtquick-controls qml-module-qtquick-dialogs qml-module-qtquick-window2 qml-module-qtquick2 qtbase5-dev qtdeclarative5-dev qtmultimedia5-dev swig libmatio-dev libirrlicht-dev libspdlog-dev libblas-dev liblapack-dev wget sudo nlohmann-json3-dev zsh xonsh ninja-build 
-    
-# Install magic-wormwhole to get things from one computer to another safely
-RUN apt install -y magic-wormhole
+ENV LANG=en_US.UTF-8
 
-# Install noVNC
-RUN git clone https://github.com/novnc/noVNC.git /opt/novnc && \
-    git clone https://github.com/novnc/websockify /opt/novnc/utils/websockify && \
-    echo "<html><head><meta http-equiv=\"Refresh\" content=\"0; url=vnc.html?autoconnect=true&reconnect=true&reconnect_delay=1000&resize=scale&quality=9\"></head></html>" > /opt/novnc/index.html
+### Update and upgrade the base image ###
+RUN upgrade-packages
 
-# Set environmental variables
-ENV DISPLAY=:1
+### Git ###
+RUN add-apt-repository -y ppa:git-core/ppa
+# https://github.com/git-lfs/git-lfs/blob/main/INSTALLING.md
+RUN curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash
+RUN install-packages git git-lfs
 
-# Create user gitpod
-RUN useradd -l -u 33333 -G sudo -md /home/gitpod -s /bin/bash -p gitpod gitpod && \
-    # passwordless sudo for users in the 'sudo' group
-    sed -i.bkp -e 's/%sudo\s\+ALL=(ALL\(:ALL\)\?)\s\+ALL/%sudo ALL=NOPASSWD:ALL/g' /etc/sudoers
+### Gitpod user ###
+# '-l': see https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#user
+RUN useradd -l -u 33333 -G sudo -md /home/gitpod -s /bin/bash -p gitpod gitpod \
+    # Remove `use_pty` option and enable passwordless sudo for users in the 'sudo' group
+    && sed -i.bkp -e '/Defaults\tuse_pty/d' -e 's/%sudo\s\+ALL=(ALL\(:ALL\)\?)\s\+ALL/%sudo ALL=NOPASSWD:ALL/g' /etc/sudoers \
+    # To emulate the workspace-session behavior within dazzle build env
+    && mkdir /workspace && chown -hR gitpod:gitpod /workspace
 
-# Switch to gitpod user
+ENV HOME=/home/gitpod
+WORKDIR $HOME
+# custom Bash prompt
+RUN { echo && echo "PS1='\[\033[01;32m\]\u\[\033[00m\] \[\033[01;34m\]\w\[\033[00m\]\$(__git_ps1 \" (%s)\") $ '" ; } >> .bashrc
+
+COPY default.gitconfig /etc/gitconfig
+COPY --chown=gitpod:gitpod default.gitconfig /home/gitpod/.gitconfig
+
+# configure git-lfs
+RUN git lfs install --system --skip-repo
+
+### Gitpod user (2) ###
 USER gitpod
+# use sudo so that user does not get sudo usage info on (the first) login
+RUN sudo echo "Running 'sudo' for Gitpod: success" && \
+    # create .bashrc.d folder and source it in the bashrc
+    mkdir -p /home/gitpod/.bashrc.d && \
+    (echo; echo "for i in \$(ls -A \$HOME/.bashrc.d/); do source \$HOME/.bashrc.d/\$i; done"; echo) >> /home/gitpod/.bashrc && \
+    # create a completions dir for gitpod user
+    mkdir -p /home/gitpod/.local/share/bash-completion/completions
 
-# Install informative git for bash
-RUN git clone https://github.com/magicmonty/bash-git-prompt.git ~/.bash-git-prompt --depth=1
+# Custom PATH additions
+ENV PATH=$HOME/.local/bin:/usr/games:$PATH
 
-# Set up .bashrc
-WORKDIR /home/gitpod
-RUN echo "GIT_PROMPT_ONLY_IN_REPO=1" >> ~/.bashrc && \
-    echo "source \${HOME}/.bash-git-prompt/gitprompt.sh" >> ~/.bashrc
-
-# Create the Desktop dir
-RUN mkdir -p /home/gitpod/Desktop
-
-# Switch back to root
 USER root
 
-# Set up script to launch graphics and vnc
-COPY start-vnc-session.sh /usr/bin/start-vnc-session.sh
-RUN chmod +x /usr/bin/start-vnc-session.sh && \
-    dos2unix /usr/bin/start-vnc-session.sh
+# Install Desktop-ENV, tools
+RUN install-packages \
+	tigervnc-standalone-server tigervnc-xorg-extension \
+	dbus dbus-x11 gnome-keyring xfce4 xfce4-terminal \
+	xdg-utils x11-xserver-utils pip
 
-# Manage ports
-EXPOSE 5901 6080 10000/tcp 10000/udp
+# Install novnc and numpy module for it
+RUN git clone --depth 1 https://github.com/novnc/noVNC.git /opt/novnc \
+	&& git clone --depth 1 https://github.com/novnc/websockify /opt/novnc/utils/websockify \
+	&& find /opt/novnc -type d -name '.git' -exec rm -rf '{}' + \
+	&& sudo -H pip3 install numpy
+COPY novnc-index.html /opt/novnc/index.html
+COPY gp-vncsession /usr/bin/
 
-# Clean up unnecessary installation products
-RUN rm -Rf /var/lib/apt/lists/*
+# Add VNC startup script
+COPY <<-"EOF" /home/gitpod/.bashrc.d/500-vnc
+export DISPLAY=:0
+test -e "$GITPOD_REPO_ROOT" && gp-vncsession
+EOF
 
-# Launch bash from /workspace
-WORKDIR /workspace
-CMD ["bash"]
+RUN chmod 0755 /usr/bin/gp-vncsession
+
+# Add X11 dotfiles
+COPY --chown=gitpod:gitpod .xinitrc $HOME/
+
+USER gitpod
